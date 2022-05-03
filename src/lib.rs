@@ -5,7 +5,6 @@
 
 
 pub mod b58c;
-pub mod signing;
 pub mod seed_hex;
 
 #[cfg(test)]
@@ -16,6 +15,3 @@ mod tests {
         assert_eq!(0,0);
     }
 }
-
-
-

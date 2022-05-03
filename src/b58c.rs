@@ -31,7 +31,7 @@ pub trait FromBase58Check {
 impl ToBase58Check for [u8] {
     fn to_base58check(&self, version: u8) -> String {
         let mut payload: Vec<u8> = iter::once(version).chain(self.iter().map(|x| *x)).collect();
-        let mut checksum = double_sha256(&payload);
+        let checksum = double_sha256(&payload);
         payload.append(&mut checksum[..4].to_vec());
         payload.to_base58()
     }
@@ -57,10 +57,10 @@ impl FromBase58Check for str {
 }
 
 fn double_sha256(payload: &[u8]) -> Vec<u8> {
-    let mut hasher = Sha256::new().chain_update(&payload);
+    let hasher = Sha256::new().chain_update(&payload);
     let output: Vec<_> = hasher.finalize().into_iter().collect();
 
-    let mut hasher = Sha256::new().chain_update(&output);
+    let hasher = Sha256::new().chain_update(&output);
     hasher.finalize().into_iter().collect()
 }
 
