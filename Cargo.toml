@@ -1,8 +1,9 @@
 [package]
 name = "deso"
+description = "DeSo (BitClout) Transaction Signing, and Other Helpful Utilities" 
 version = "0.1.0"
 edition = "2021"
-
+license-file = "./license"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
