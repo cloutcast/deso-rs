@@ -3,6 +3,7 @@
 //! 
 //! This crate does NOT submit anything to DeSo.
 
+pub use hex;
 
 pub mod b58c;
 pub mod seed_hex;

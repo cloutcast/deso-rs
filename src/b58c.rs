@@ -2,10 +2,10 @@
 
 
 use std::iter;
-use base58::{FromBase58, ToBase58};
+use base58::{FromBase58};
 use sha2::{Digest, Sha256};
 
-pub use base58::FromBase58Error;
+pub use base58::{FromBase58Error, ToBase58};
 
 /// Errors that can occur when decoding base58check encoded string.
 #[derive(Debug, PartialEq)]
@@ -32,7 +32,27 @@ impl ToBase58Check for [u8] {
     fn to_base58check(&self, version: u8) -> String {
         let mut payload: Vec<u8> = iter::once(version).chain(self.iter().map(|x| *x)).collect();
         let checksum = double_sha256(&payload);
+        println!("c {:?}", checksum[..4].to_vec());
         payload.append(&mut checksum[..4].to_vec());
+        payload.to_base58()
+    }
+}
+
+pub trait ToDesoBase58Check {
+    fn to_deso_b58check(&self) -> String;
+}
+
+impl ToDesoBase58Check for [u8] {
+    fn to_deso_b58check(&self) -> String {
+        let mut payload: Vec<u8> = iter::once(0).chain(self.iter().map(|x| *x)).collect();
+        let payload_length: u64 = payload.len().try_into().unwrap();
+        let payload_len = format!("{:X}", payload_length);
+        let mut txo_payload_vec = hex::decode(payload_len).expect("Could not serialize length");
+
+        let checksum = double_sha256(&payload);
+        // println!("c {:?}", checksum[..4].to_vec());
+        payload.append(&mut checksum[..4].to_vec());
+        // payload.append(&mut txo_payload_vec);
         payload.to_base58()
     }
 }
