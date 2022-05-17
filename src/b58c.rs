@@ -9,7 +9,7 @@ pub struct Base58CheckConfig {
     base: u64,
     leader: char,
     //factor: u64,
-    i_factor: usize
+    i_factor: f64
 }
 
 fn generate_base58check_config() -> Result<Base58CheckConfig, Box<dyn std::error::Error>> {
@@ -50,7 +50,7 @@ fn generate_base58check_config() -> Result<Base58CheckConfig, Box<dyn std::error
 
     let leader =  alphabet_vec[0]; //ownership bullshit
 
-    println!("{} {} {} {}", i_factor_f, leader, base, log_256);
+    // println!("{} {} {} {}", i_factor_f, leader, base, log_256);
 
     
     let b = Base58CheckConfig {
@@ -60,12 +60,13 @@ fn generate_base58check_config() -> Result<Base58CheckConfig, Box<dyn std::error
         base: base as u64,
         leader: leader,
         //factor: factor,
-        i_factor: i_factor_f.round() as usize
+        i_factor: i_factor_f as f64
     };
     Ok(b)
 }
 
 pub fn encode_b58c_plain(source: Vec<u8>) -> Result<String, Box<dyn Error>> {
+
 
     let b_config = generate_base58check_config()?;
 
@@ -82,46 +83,57 @@ pub fn encode_b58c_plain(source: Vec<u8>) -> Result<String, Box<dyn Error>> {
         zeroes += 1;
     }
 
-    let size = ((pend - pbegin) * b_config.i_factor + 1) >> 0;
+    let size = ((pend as f64 - pbegin as f64) * b_config.i_factor + 1.0) as u64 >> 0;
 
     let mut b58: Vec<u8> = vec![0; size as usize]; // https://stackoverflow.com/questions/29530011/creating-a-vector-of-zeros-for-a-specific-size
-    
+    // println!("size: {} pbegin: {} pend: {}", size, pbegin, pend);
     while pbegin != pend {
         let mut carry = source[pbegin] as u64;
         
-        let mut it1 = size - 1;
+        let mut it1 = (size - 1) as i64;
         let mut i = 0 as usize;
-        while (carry != 0 || i < length) && it1 != 1 {
-            carry += (256 * b58[it1] as u64) >> 0;
-            b58[it1] = (carry % b_config.base >> 0) as u8;
-            carry = (carry / b_config.base) >> 0;
+
+        while (carry != 0 || i < length) && it1 != -1 {
+
+            carry += (256.0 * b58[it1 as usize] as f64) as u64 >> 0;
+            // println!("1 {} {} {}", &i, &carry, &it1);
+            let carry_mod_base = (carry as f64 % b_config.base as f64) as u64 >> 0;
+            b58[it1 as usize] = carry_mod_base as u8;
+            carry = ((&carry / b_config.base) as f64) as u64 >> 0;
 
             // end for
-            it1 -= 1;
-            i += 1;
+            it1 = &it1 - 1;
+            i = &i + 1;
+            // println!("2 {} {} {}", &i, &carry, &it1);
         }
 
         if carry != 0 {
-            panic!("carry is non-zero: {} {} ", carry, b_config.i_factor);
+            // dbg!(b58);
+            panic!("carry is non-zero: c{} b{} i{} l{} b{} e{}", &carry, b58[it1 as usize], &i, &length, &pbegin, &pend);
         }
-        length = i;
+        // println!("i: {}", &i);
+        length = i.to_owned();
         pbegin += 1;
     }
 
     // skip leading zeroes in base58 result. (line 64)
-    let mut it2 = size - length;
-    while it2 != size && b58[it2] == 0 {
+    let mut it2 = (size as u64) - (length as u64);
+    
+    // println!("2 it2: {} size: {} length: {}", &it2, &size, &length);
+
+    while it2 != size && b58[it2 as usize] == 0 {
         it2 += 1;
     }
     let mut str_leader = (format!("{}", b_config.leader)).as_str().repeat(zeroes);
-
+    // println!("3 it2: {} size: {} length: {} z: {} l: {}", &it2, &size, &length, &zeroes, b_config.leader);
     while it2 < size {
         it2 += 1;
 
-        let str_slice = format!("{}", b_config.alphabet_vec[b58[it2] as usize]); 
-        str_leader = format!("{}{}", str_leader, str_slice);
+        let str_slice = format!("{}", b_config.alphabet_vec[b58[it2 as usize - 1 as usize] as usize]); 
+        // println!("{}", &str_slice);
+        str_leader = format!("{}{}", &str_leader, &str_slice);
     }    
-
+    // println!("{}", str_leader);
     Ok(str_leader)
 }
 
@@ -152,6 +164,6 @@ pub fn encode(payload: Vec<u8>) -> Result<String, Box<dyn Error>> {
     the_buffer[ xx + 1] = checksum[1];
     the_buffer[ xx + 2] = checksum[2];
     the_buffer[ xx + 3] = checksum[3];
-
+    // dbg!(&the_buffer);
     encode_b58c_plain(the_buffer)
 }
