@@ -20,7 +20,9 @@ impl SeedHex {
         let hash2: &[u8] = &*Sha256::digest(hash1);
         let message = Message::from_slice(hash2).expect("could not create message to sign");
         let secp = Secp256k1::new();    // create a secp256k1 object to work with.
-        let sig = secp.sign(&message, &seed_key);
+        
+        let sig = secp.sign_ecdsa(&message, &seed_key);
+
         let sig_der = sig.serialize_der();
         let sig_hex = hex::encode(sig_der);
         let mut final_txo_bytes: Vec<u8> = Vec::new();
@@ -34,11 +36,9 @@ impl SeedHex {
         let new_txbyte_len = txo_bytes.len() - 1;
         txo_bytes.truncate(new_txbyte_len);
 
-
         final_txo_bytes.append(&mut txo_bytes);
         final_txo_bytes.append(&mut txo_sig_vec);
         final_txo_bytes.append(&mut sig_bytes);
-
 
         let final_sig_hex = hex::encode(&final_txo_bytes);
 
