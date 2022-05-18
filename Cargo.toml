@@ -11,7 +11,7 @@ path = "src/lib.rs"
 
 [dependencies]
 base58 = "0.2.0"
-base58check-encode =  {path = "./../base58check-encode"}
+base58check-encode =  "0.1.1"
 hdwallet = "0.3.1"
 hex = "0.3.1"
 isahc = {version = "1.7.0", features = ["json", "text-decoding"]}
