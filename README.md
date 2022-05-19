@@ -1,5 +1,5 @@
 # DeSo Rust Utilities 
-    DeSo (BitClout) Transaction Signing, and Other Helpful Utilities
+    DeSo Transaction Signing, and Other Helpful Utilities
 
 Sign Transactions on the DeSo Blockchain. 
 *This crate is intended to sign transactions.*
